@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommandations de films</title>
+
+    <!-- jQuery -->
+    <script
+        src="https://code.jquery.com/jquery-3.7.0.min.js"
+        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+        crossorigin="anonymous">
+    </script>
+    <!-- jQuery UI -->
+    <script
+        src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
+        integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
+        crossorigin="anonymous">
+    </script>
+
+    <!-- jQuery Select2-->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- CSS -->
+    <style>
+        /* Reset default margin and padding for body and ul */
+        body, ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Set the full height and width of the page */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Center the content div */
+        .content {
+            max-width: 60%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center; /* Optional: If you want the content inside the div to be centered horizontally */
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            background-image: url({% static 'img/background.jpg' %});
+            background-size: cover; /* Ajuste la taille de l'image pour couvrir tout le fond */
+            background-repeat: no-repeat; /* Empêche la répétition de l'image en arrière-plan */
+        }
+        form {
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px 40px 20px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h3 {
+            color: darkblue;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"]
+        input[type="number"]
+        input[type="select-multiple"]
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .custom-button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .custom-button:hover {
+            background-color: #0056b3;
+        }
+
+        .checkbox-group, .radio-group {
+            display: flex;
+        justify-content: center;
+        }
+
+        .checkbox-group label, .radio-group label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 20px; /* Ajustez cet espace selon vos préférences */
+        }
+
+        .checkbox-group input[type="checkbox"], .radio-group input[type="radio"] {
+            margin-top: 5px; /* Ajustez cet espace selon vos préférences */
+        }
+
+        {% block css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+    <script>
+        {% block js %}{% endblock %}
+    </script>
+
+</body>
+
+</html>

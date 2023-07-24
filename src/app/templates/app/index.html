@@ -1,0 +1,107 @@
+{% extends 'app/base.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+
+    <h1>Application de recommandations de films</h1>
+    <h2><i>La vie en Creuse</i></h2>
+
+    <form action="{% url 'app:questionnaire' %}" method="POST">
+        {% csrf_token %}
+        <!-- TITLE -->
+        <label for="filmTitleInput"><h3>Titre du film</h3></label>
+        <input type="text" name="select2" id="filmTitleInput" required>
+        <input type="hidden" name="title" id="filmTitleHidden">
+
+        <!-- AGE -->
+        <h3>Tranche d'âge</h3>
+
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="age" value="child" required checked> - de 14 ans
+            </label>
+            <label>
+                <input type="radio" name="age" value="teenager"> entre 14 et 18 ans
+            </label>
+            <label>
+                <input type="radio" name="age" value="adult"> + de 18 ans
+            </label>
+        </div>
+
+        <!-- NB FILMS -->
+        <label for="recommendationsNumberInput"><h3>Nombre de recommandations souhaitées</h3></label>
+        <input type="number" name="recommendationsNumber" id="recommendationsNumberInput" value="5" min="5" required>
+
+        <!-- SUBMIT -->
+        <input type="submit" class="custom-button" value="Lancer la recherche">
+    </form>
+
+{% endblock %}
+
+<!-- JAVASCRIPT -->
+{% block js %}
+
+    // Fonction pour récupérer les titres de films depuis l'API sous forme de promesse
+    function getFilmTitles() {
+        return new Promise((resolve, reject) => {
+            $.get("{% url 'app:get_movie_titles' %}")
+                .done((filmTitles) => resolve(filmTitles))
+                .fail((error) => reject(error));
+        });
+    }
+
+    // Fonction pour initialiser la liste déroulante avec Select2
+    function initializeAutoComplete() {
+        // Appeler la fonction getFilmTitles() pour obtenir les titres de films
+        getFilmTitles()
+            .then((filmTitles) => {
+                // Initialiser la liste déroulante avec Select2 en utilisant les titres de films récupérés
+                $("#filmTitleInput").select2({
+                    data: filmTitles
+                });
+            })
+            .catch((error) => {
+                // Gérer l'erreur en cas d'échec de la récupération des titres de films
+                console.error("Erreur lors de la récupération des titres de films :", error);
+            });
+    }
+
+    function addTitleChangeListener() {
+        // Ajoutez le symbole "#" devant les sélecteurs d'ID pour sélectionner les éléments correctement
+        $("#filmTitleInput").on("change", function () {
+            // Utilisez la méthode select2('data') pour récupérer l'objet représentant l'élément sélectionné
+            const selectedTitle = $(this).select2('data')[0];
+
+            // Vérifiez si un élément a été sélectionné
+            if (selectedTitle) {
+                const value = selectedTitle.text;
+                // Ajoutez le symbole "#" devant le sélecteur de l'ID de l'élément pour le modifier avec la nouvelle valeur
+                $("#filmTitleHidden").val(value);
+            }
+        });
+    }
+
+
+    // Function to delete filmTitles from localStorage when user leave website
+    function addBeforeUnloadListener() {
+        window.addEventListener("beforeunload", function () {
+        // Supprimez les données du localStorage
+        localStorage.removeItem("filmTitles");
+        });
+    }
+
+
+
+    // Call functions
+    $(document).ready(function () {
+
+        initializeAutoComplete();
+        addBeforeUnloadListener();
+        addTitleChangeListener()
+    });
+
+{% endblock %}
+</body>
+</html>
