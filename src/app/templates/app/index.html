@@ -8,11 +8,13 @@
     <h1>Application de recommandations de films</h1>
     <h2><i>La vie en Creuse</i></h2>
 
-    <form action="{% url 'app:questionnaire' %}" method="POST">
+    <form id="questionnaireForm" action="{% url 'app:questionnaire' %}" method="POST">
         {% csrf_token %}
         <!-- TITLE -->
-        <label for="filmTitleInput"><h3>Titre du film</h3></label>
-        <input type="text" name="select2" id="filmTitleInput" required>
+        <h3>
+            <label for="filmTitleInput">Titre du film</label>
+        </h3>
+        <input type="text" name="select2" id="filmTitleInput">
         <input type="hidden" name="title" id="filmTitleHidden">
 
         <!-- AGE -->
@@ -50,7 +52,7 @@
                 .done((filmTitles) => resolve(filmTitles))
                 .fail((error) => reject(error));
         });
-    }
+    };
 
     // Fonction pour initialiser la liste déroulante avec Select2
     function initializeAutoComplete() {
@@ -66,22 +68,20 @@
                 // Gérer l'erreur en cas d'échec de la récupération des titres de films
                 console.error("Erreur lors de la récupération des titres de films :", error);
             });
-    }
+    };
 
     function addTitleChangeListener() {
         // Ajoutez le symbole "#" devant les sélecteurs d'ID pour sélectionner les éléments correctement
         $("#filmTitleInput").on("change", function () {
-            // Utilisez la méthode select2('data') pour récupérer l'objet représentant l'élément sélectionné
             const selectedTitle = $(this).select2('data')[0];
 
             // Vérifiez si un élément a été sélectionné
             if (selectedTitle) {
                 const value = selectedTitle.text;
-                // Ajoutez le symbole "#" devant le sélecteur de l'ID de l'élément pour le modifier avec la nouvelle valeur
                 $("#filmTitleHidden").val(value);
             }
         });
-    }
+    };
 
 
     // Function to delete filmTitles from localStorage when user leave website
@@ -90,16 +90,25 @@
         // Supprimez les données du localStorage
         localStorage.removeItem("filmTitles");
         });
-    }
+    };
 
-
+    function addSubmitListener() {
+        $('#questionnaireForm').on('submit', function(e) {
+            console.log($("#filmTitleHidden").val())
+            if ($("#filmTitleHidden").val() === '') {
+                e.preventDefault();
+                alert('Veuillez sélectionner un film');
+            }
+        });
+    };
 
     // Call functions
     $(document).ready(function () {
 
         initializeAutoComplete();
         addBeforeUnloadListener();
-        addTitleChangeListener()
+        addTitleChangeListener();
+        addSubmitListener();
     });
 
 {% endblock %}

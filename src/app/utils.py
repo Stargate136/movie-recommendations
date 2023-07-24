@@ -1,4 +1,6 @@
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
 
 def load_movies():
@@ -156,6 +158,11 @@ def get_thumbnail_url(url):
     Returns:
         str: The url of the movie image 
     """
-    # TODO : modifier pour retourner l'URL de l'image scrappé
+    # We modify url to get the photo gallery webpage
+    url = "/".join(url.split("/")[:-1]) + "/mediaindex?ref_=tt_ov_mi_sm"
 
-    return url
+    response = requests.get(url)                        # We get the HTML response of the url
+    soup = BeautifulSoup(response.text, "html.parser")  # We parse HTML in a BeautifulSoup object
+    img = soup.find("img")                              # We get the first image of the webpage
+    img_url = img.get("src")                            # We get the source of the image
+    return img_url                                      # And we return it

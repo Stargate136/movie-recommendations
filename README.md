@@ -29,7 +29,6 @@
 ## TODO
 
 ### Step 1 : Build a web app using Django without Machine Learning
-- Implementer le scrapping pour récupérer l'image
 - Finaliser la page result
 
 ### Step 2 : Train a Machine Learning model
