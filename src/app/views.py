@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from .utils import load_movies, load_recommendations, generate_recommendations, filter_recommendations, get_thumbnail_url
+from .utils import load_movies, load_recommendations, generate_recommendations, filter_recommendations, \
+    get_thumbnail_url, filter_by_age_category
 
 
 def index(request):
@@ -106,7 +107,11 @@ def result(request):
 
 def get_movie_titles(request):
     """The view to get movies title with AJAX for autocomplete"""
-    df = load_movies()                       # We load movies dataframe
-    titles = df["movie_title"].tolist()      # We get movie_titles as a list
-    titles.sort()                            # We sort it
-    return JsonResponse(titles, safe=False)  # And we return a JsonResponse contains the movies titles
+    # We load movies dataframe
+    df = load_movies()
+    # We store the movies titles filtered by age in a dict
+    titles = {"adult": sorted(filter_by_age_category(df=df, age_category="adult")["movie_title"].tolist()),
+              "teenager": sorted(filter_by_age_category(df=df, age_category="teenager")["movie_title"].tolist()),
+              "child": sorted(filter_by_age_category(df=df, age_category="child")["movie_title"].tolist())}
+    # And we return a JsonResponse contains this dict
+    return JsonResponse(titles)

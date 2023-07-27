@@ -1,11 +1,12 @@
 {% extends 'app/base.html' %}
+{% load static %}
 
 {% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'app/css/questionnaire.css' %}">
+{% endblock %}
 
-    .hidden-choice {
-        display: none
-    }
-
+{% block js %}
+    <script src="{% static 'app/js/questionnaire.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -93,29 +94,3 @@
         <input type="submit" value="Voir les films qui pourraient me plaire" class="custom-button">
     </form>
 {% endblock %}
-
-<!-- JAVASCRIPT -->
-{% block js %}
-
-    function toggleDropdown() {
-        var dropdown = document.getElementById("dropdown");
-        if (dropdown.style.display === "none") {
-            dropdown.style.display = "block";
-        } else {
-            dropdown.style.display = "none";
-        }
-    }
-
-        // Fonction pour afficher/masquer les éléments en fonction de la valeur sélectionnée
-    function updateVisibleElements() {
-        const selectedFilter = $("#filter").val();
-        $(".hidden-choice").hide();
-        $("#" + selectedFilter).show();
-    }
-
-    // Écouter les changements dans la liste déroulante
-    $("#filter").on("change", updateVisibleElements);
-
-{% endblock %}
-</body>
-</html>

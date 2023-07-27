@@ -1,6 +1,8 @@
 {% extends 'app/base.html' %}
+{% load static %}
 
-{% block css %}
+{% block js %}
+    <script src="{% static 'app/js/index.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -11,24 +13,26 @@
     <form id="questionnaireForm" action="{% url 'app:questionnaire' %}" method="POST">
         {% csrf_token %}
         <!-- TITLE -->
-        <h3>
-            <label for="filmTitleInput">Titre du film</label>
-        </h3>
-        <input type="text" name="select2" id="filmTitleInput">
-        <input type="hidden" name="title" id="filmTitleHidden">
+        <div id="filmInputContainer">
+            <h3>
+                <label for="filmTitleInput">Titre du film</label>
+            </h3>
+            <input type="text" name="select2" id="filmTitleInput">
+            <input type="hidden" name="title" id="filmTitleHidden">
+        </div>
 
         <!-- AGE -->
         <h3>Tranche d'âge</h3>
 
-        <div class="radio-group">
+        <div class="radio-group" id="ageCategories">
             <label>
-                <input type="radio" name="age" value="child" required checked> - de 14 ans
+                <input class="radioAgeCategory" type="radio" name="age" value="child" required checked> - de 14 ans
             </label>
             <label>
-                <input type="radio" name="age" value="teenager"> entre 14 et 18 ans
+                <input class="radioAgeCategory" type="radio" name="age" value="teenager"> entre 14 et 18 ans
             </label>
             <label>
-                <input type="radio" name="age" value="adult"> + de 18 ans
+                <input class="radioAgeCategory" type="radio" name="age" value="adult"> + de 18 ans
             </label>
         </div>
 
@@ -41,76 +45,3 @@
     </form>
 
 {% endblock %}
-
-<!-- JAVASCRIPT -->
-{% block js %}
-
-    // Fonction pour récupérer les titres de films depuis l'API sous forme de promesse
-    function getFilmTitles() {
-        return new Promise((resolve, reject) => {
-            $.get("{% url 'app:get_movie_titles' %}")
-                .done((filmTitles) => resolve(filmTitles))
-                .fail((error) => reject(error));
-        });
-    };
-
-    // Fonction pour initialiser la liste déroulante avec Select2
-    function initializeAutoComplete() {
-        // Appeler la fonction getFilmTitles() pour obtenir les titres de films
-        getFilmTitles()
-            .then((filmTitles) => {
-                // Initialiser la liste déroulante avec Select2 en utilisant les titres de films récupérés
-                $("#filmTitleInput").select2({
-                    data: filmTitles
-                });
-            })
-            .catch((error) => {
-                // Gérer l'erreur en cas d'échec de la récupération des titres de films
-                console.error("Erreur lors de la récupération des titres de films :", error);
-            });
-    };
-
-    function addTitleChangeListener() {
-        // Ajoutez le symbole "#" devant les sélecteurs d'ID pour sélectionner les éléments correctement
-        $("#filmTitleInput").on("change", function () {
-            const selectedTitle = $(this).select2('data')[0];
-
-            // Vérifiez si un élément a été sélectionné
-            if (selectedTitle) {
-                const value = selectedTitle.text;
-                $("#filmTitleHidden").val(value);
-            }
-        });
-    };
-
-
-    // Function to delete filmTitles from localStorage when user leave website
-    function addBeforeUnloadListener() {
-        window.addEventListener("beforeunload", function () {
-        // Supprimez les données du localStorage
-        localStorage.removeItem("filmTitles");
-        });
-    };
-
-    function addSubmitListener() {
-        $('#questionnaireForm').on('submit', function(e) {
-            console.log($("#filmTitleHidden").val())
-            if ($("#filmTitleHidden").val() === '') {
-                e.preventDefault();
-                alert('Veuillez sélectionner un film');
-            }
-        });
-    };
-
-    // Call functions
-    $(document).ready(function () {
-
-        initializeAutoComplete();
-        addBeforeUnloadListener();
-        addTitleChangeListener();
-        addSubmitListener();
-    });
-
-{% endblock %}
-</body>
-</html>

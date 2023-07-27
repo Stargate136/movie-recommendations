@@ -1,49 +1,20 @@
 {% extends 'app/base.html' %}
+{% load static %}
 
 {% block css %}
-/*
-    body{
-        background-image: none;
-    }*/
-
-    .content {
-        max-width: 90;
-        max-height: 50%;
-        overflow-y: auto; /* Permet le défilement vertical si le contenu dépasse la hauteur maximale */
-
-    }
-
-    img {
-        max-width: 100px;
-        max-height: 100px;
-    }
-
-/* Style de base du tableau */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-/* Style des cellules du tableau */
-td, th {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-
-
-/* Ajouter une couleur d'arrière-plan au survol des lignes du tableau */
-tr:hover {background-color: #f5f5f5;}
-    
+    <link rel="stylesheet" type="text/css" href="{% static 'app/css/result.css' %}">
 {% endblock %}
 
 {% block content %}
 
     <h1>Résultats</h1>
     <h2>Vous aviez choisi <i>“{{ title }}”</i></h2>
-    <p><i>Voici une liste des {{ nb }} film{% if nb > 1 %}s{% endif %} qui pourraient vous plaire</i></p>
+
+    {% if nb == 1 %}
+        <p><i>Voici le film qui pourrait vous plaire</i></p>
+    {% else %}
+        <p><i>Voici une liste des {{ nb }} films qui pourraient vous plaire</i></p>
+    {% endif %}
 
     <table>
         <thead>
@@ -71,7 +42,3 @@ tr:hover {background-color: #f5f5f5;}
     </table>
 
 {% endblock %}
-
-
-</body>
-</html>

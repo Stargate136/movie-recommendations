@@ -27,10 +27,9 @@
 
 
 ## TODO
+- commenter HTML, CSS et JS
 
 ### Step 1 : Build a web app using Django without Machine Learning
-- Ajouter un filtre en fonction de l'age sur le champs d'autocompletion
-- changer l'image de fond
 
 ### Step 2 : Integrate the Machine learning model in the web app
 
