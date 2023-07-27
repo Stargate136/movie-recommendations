@@ -12,6 +12,8 @@
 {% block content %}
     <form action="{% url 'app:result' %}" method="POST">
         {% csrf_token %}
+
+        <!-- PAGE TITLE -->
         <h1>Quelques questions pour affiner les recommandations relative à <br><i>“{{ title }}”</i></h1>
 
         <!-- LANGUAGE -->
@@ -25,7 +27,6 @@
                 {% endfor %}
             </div>
         {% endfor %}
-
 
         <!-- TIME -->
         <h3>Durée</h3>
@@ -45,6 +46,7 @@
 
             </div>
 
+        <!-- SELECTION CRITERIA -->
         <label for="filter">
             <h3>Critère de sélection</h3>
         </label>

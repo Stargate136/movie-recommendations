@@ -1,8 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from .utils import load_movies, load_recommendations, generate_recommendations, filter_recommendations, \
-    get_thumbnail_url, filter_by_age_category
+from . import utils
 
 
 def index(request):
@@ -12,14 +11,13 @@ def index(request):
 
 def questionnaire(request):
     """The view for the questionnaire page"""
-
     # We get the datas of the form on index page
     title = request.POST.get("title")
     nb = int(request.POST.get("recommendationsNumber"))
     age = request.POST.get("age")
 
     # We generate recommendations
-    df_recommendations = generate_recommendations(title, nb, age)
+    df_recommendations = utils.generate_recommendations(title, nb, age)
 
     # We store in the session the title, the number of movies to recommend and the indexes of the recommendations
     request.session["title"] = title
@@ -53,7 +51,6 @@ def questionnaire(request):
 
 def result(request):
     """The view for the result page"""
-
     # We get the choices in the form in 'data'
     data = request.POST
 
@@ -63,7 +60,7 @@ def result(request):
     idx = request.session.get("recommendations_idx")
 
     # We load recommendations with the indexes
-    df = load_recommendations(idx)
+    df = utils.load_recommendations(idx)
 
     # We store all the choices in a dict
     choices = {"age": data.get("age"),
@@ -75,7 +72,7 @@ def result(request):
                "directors": data.getlist("directors")}
 
     # We filter recommendations with the user choices
-    df = filter_recommendations(df, choices, nb)
+    df = utils.filter_recommendations(df, choices, nb)
 
     # We get the Series we need to use in the template
     titles = df["movie_title"]
@@ -87,7 +84,7 @@ def result(request):
     # We store all in a list of dict contains datas for each movie
     recommended_films = [{"title": title,
                           "url": url,
-                          "thumbnail_url": get_thumbnail_url(url),
+                          "thumbnail_url": utils.get_thumbnail_url(url),
                           "genres": ", ".join(genre.split("|")),
                           "actor": actor,
                           "director": director} for title, url, genre, actor, director in zip(titles,
@@ -106,12 +103,12 @@ def result(request):
 
 
 def get_movie_titles(request):
-    """The view to get movies title with AJAX for autocomplete"""
+    """The API view to get movies title with AJAX for autocomplete"""
     # We load movies dataframe
-    df = load_movies()
+    df = utils.load_movies()
     # We store the movies titles filtered by age in a dict
-    titles = {"adult": sorted(filter_by_age_category(df=df, age_category="adult")["movie_title"].tolist()),
-              "teenager": sorted(filter_by_age_category(df=df, age_category="teenager")["movie_title"].tolist()),
-              "child": sorted(filter_by_age_category(df=df, age_category="child")["movie_title"].tolist())}
+    titles = {"adult": sorted(utils.filter_by_age_category(df=df, age_category="adult")["movie_title"].tolist()),
+              "teenager": sorted(utils.filter_by_age_category(df=df, age_category="teenager")["movie_title"].tolist()),
+              "child": sorted(utils.filter_by_age_category(df=df, age_category="child")["movie_title"].tolist())}
     # And we return a JsonResponse contains this dict
     return JsonResponse(titles)

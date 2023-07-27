@@ -27,7 +27,8 @@
 
 
 ## TODO
-- commenter HTML, CSS et JS
+- écrire les tests unitaires
+- fixer bug pour les enfants / adolescents
 
 ### Step 1 : Build a web app using Django without Machine Learning
 

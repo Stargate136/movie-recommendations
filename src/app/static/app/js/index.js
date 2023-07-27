@@ -1,5 +1,4 @@
-
-// Fonction pour récupérer les titres de films depuis l'API sous forme de promesse
+// Function to retrieve movie titles from the API as a Promise
 function getFilmTitles() {
     return new Promise((resolve, reject) => {
         $.get("get-titles/")
@@ -8,7 +7,7 @@ function getFilmTitles() {
     });
 };
 
-// Fonction pour initialiser la liste déroulante avec Select2
+// Function to initialize the drop-down list with Select2
 function initializeAutoComplete(ageCategory) {
 
     // Remove old Select2 input if it exists
@@ -18,41 +17,41 @@ function initializeAutoComplete(ageCategory) {
     let selectInput = $('<input type="text" name="select2" id="filmTitleInput">');
     $('#filmInputContainer').append(selectInput);
 
-    // Appeler la fonction getFilmTitles() pour obtenir les titres de films
+    // Call the getFilmTitles() function to get film titles
     getFilmTitles()
         .then((filmTitles) => {
 
             const formattedFilmTitles = filmTitles[ageCategory].map(title => ({ id: title, text: title }));
 
-            // Initialiser la liste déroulante avec Select2 en utilisant les titres de films récupérés
+            // Initialize the drop-down list with Select2 using the retrieved film titles
             $("#filmTitleInput").select2({
                  // Transformer les titres de films en objets appropriés pour Select2
                 data: formattedFilmTitles
             });
         })
         .catch((error) => {
-            // Gérer l'erreur en cas d'échec de la récupération des titres de films
+            // Error handling in case of failed movie title retrieval
             console.error("Error during load films titles :", error);
         });
 };
 
+
+// LISTENERS
 function addTitleChangeListener() {
-    // Ajoutez le symbole "#" devant les sélecteurs d'ID pour sélectionner les éléments correctement
-    $("#filmTitleInput").on("change", function () {
+    $(document).on("change", "#filmTitleInput", function () {
         const selectedTitle = $(this).select2('data')[0];
 
-        // Vérifiez si un élément a été sélectionné
         if (selectedTitle) {
             const value = selectedTitle.text;
             $("#filmTitleHidden").val(value);
+            
+            console.log(`Selected title: ${value}`);
         }
     });
 };
 
-// Function to delete filmTitles from localStorage when user leave website
 function addBeforeUnloadListener() {
     window.addEventListener("beforeunload", function () {
-    // Supprimez les données du localStorage
     localStorage.removeItem("filmTitles");
     });
 };
@@ -66,10 +65,8 @@ function addSubmitListener() {
     });
 };
 
-// Ajouter un écouteur d'événements pour changer la tranche d'âge
 function addAgeCategoryListener() {
     $("#ageCategories").change(function() {
-        // Réinitialiser la liste déroulante avec les nouveaux titres de films
         const selectedAgeCategory = $(this).find(".radioAgeCategory:checked").val()
 
         initializeAutoComplete(selectedAgeCategory);
@@ -87,6 +84,5 @@ function addListeners() {
 
 // Call functions
 $(document).ready(function () {
-
     addListeners();
 });
