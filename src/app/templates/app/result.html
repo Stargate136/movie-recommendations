@@ -7,7 +7,7 @@
     }*/
 
     .content {
-        max-width: 70%;
+        max-width: 90;
         max-height: 50%;
         overflow-y: auto; /* Permet le défilement vertical si le contenu dépasse la hauteur maximale */
 
@@ -17,17 +17,35 @@
         max-width: 100px;
         max-height: 100px;
     }
+
+/* Style de base du tableau */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+/* Style des cellules du tableau */
+td, th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+
+
+/* Ajouter une couleur d'arrière-plan au survol des lignes du tableau */
+tr:hover {background-color: #f5f5f5;}
     
 {% endblock %}
 
 {% block content %}
-    <!-- CONTENT -->
 
-        <h1>Résultats</h1>
-        <h2>Vous aviez choisi <i>“{{ title }}”</i></h2>
-        <p><i>Voici une liste des {{ nb }} film{% if nb > 1 %}s{% endif %} qui pourraient vous plaire</i></p>
-<table>
-    <tbody>
+    <h1>Résultats</h1>
+    <h2>Vous aviez choisi <i>“{{ title }}”</i></h2>
+    <p><i>Voici une liste des {{ nb }} film{% if nb > 1 %}s{% endif %} qui pourraient vous plaire</i></p>
+
+    <table>
         <thead>
             <tr>
                 <th><h3>Classement</h3></th>
@@ -38,18 +56,19 @@
                 <th><h3>Réalisateur</h3></th>
             </tr>
         </thead>
-        {% for film in recommended_films %}
-            <tr>
-                <td><h3>{{ forloop.counter }}.</h3></td>
-                <td><h2><a href="{{ film.url }}">{{ film.title }}</a></h2></td>
-                <td><img src="{{ film.thumbnail_url }}" alt="Affiche du film '{{ film.title }}'"></td>
-                <td>{{ film.genres }}</td>
-                <td>{{ film.actor }}</td>
-                <td>{{ film.director }}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <tbody>
+            {% for film in recommended_films %}
+                <tr>
+                    <td>{{ forloop.counter }}.</td>
+                    <td><a href="{{ film.url }}">{{ film.title }}</a></td>
+                    <td><img src="{{ film.thumbnail_url }}" alt="Affiche du film '{{ film.title }}'"></td>
+                    <td>{{ film.genres }}</td>
+                    <td>{{ film.actor }}</td>
+                    <td>{{ film.director }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
 {% endblock %}
 

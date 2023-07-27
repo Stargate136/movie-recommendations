@@ -2,6 +2,12 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+from project import settings
+from sklearn.neighbors import NearestNeighbors
+
+
+DATA_DIR = settings.BASE_DIR / "data"
+
 
 def load_movies():
     """Function to load movies dataframe
@@ -10,10 +16,9 @@ def load_movies():
         pd.DataFrame: A dataframe contains all movies
     """
     # We load the dataframe from CSV file
-    df = pd.read_csv(
-        "https://gist.githubusercontent.com/Stargate136/d861f67493e89a4ad95922a89422c70c/raw/e78c923aa0f3179566b3b00458433a2711fcb812/movie_metadata_cleaned_v2.csv")
+    df = pd.read_csv(DATA_DIR / "cleaned_data.csv")
 
-    # We fill empty values with an empty string ( Dont worry the dataframe is already cleaned ! )
+    # We fill empty values with an empty string ( Don't worry the dataframe is already cleaned ! )
     df.fillna("", inplace=True)
     return df
 
@@ -61,18 +66,35 @@ def generate_recommendations(title="", nb=5, age_category="adult"):
         age_category (str, optional): A string representing the category of age. Possibles values : ["child", "teenager", "adult"]. Defaults to "adult".
 
     Returns:
-        pd.DataFrame: A dataframe contains movies are recommanded by the Machine Learning algorithm
+        pd.DataFrame: A dataframe contains movies are recommended by the Machine Learning algorithm
     """
-    # We load the movies dataframe
-    df = load_movies()
+    # we load the preprocessed and the movies dataframe
+    df_ML = pd.read_csv(DATA_DIR / "preprocessed_data.csv.gz")
+    df_movies = load_movies()
 
-    # We filter the dataframe by age_category
-    df = filter_by_age_category(df, age_category)
+    # We filter ML dataframe by age
+    df_ML = df_ML[df_ML.index.isin(filter_by_age_category(df_movies, age_category).index)]
 
-    # TODO : modifier la ligne pour utiliser l'algorithme de ML
+    # We rename the first column to idx
+    new_columns = df_ML.columns.tolist()
+    new_columns[0] = 'idx'
+    df_ML.columns = new_columns
 
-    data = df.sample(nb * 10)
-    return data
+    # We fit the NearestNeighbors model
+    nn = NearestNeighbors(n_neighbors=nb * 10)
+    nn.fit(df_ML.drop("idx", axis=1))
+
+    # We get the index of the movie with his title, and we get the neighbors
+    idx = df_movies[df_movies["movie_title"] == title].index
+    distances, indices = nn.kneighbors(df_ML.iloc[idx].drop("idx", axis=1))
+
+    # We get the indexes of the movies (except the first, it's the input movie)
+    indices = df_ML.iloc[indices[0, 1:]]["idx"].values
+
+    # And we load the recommendations in a dataframe
+    df_recommendations = load_recommendations(indices)
+
+    return df_recommendations
 
 
 def filter_recommendations(df, choices, nb=5):
@@ -80,7 +102,7 @@ def filter_recommendations(df, choices, nb=5):
 
     Args:
         df (pd.DataFrame): A dataframe contains movies recommendations
-        choices (dict): A dictionnary containing the user choices
+        choices (dict): A dictionary containing the user choices
         nb (int, optional): The number of recommendations needed. Defaults to 5.
 
     Returns:
@@ -150,7 +172,7 @@ def filter_recommendations(df, choices, nb=5):
 
 
 def get_thumbnail_url(url):
-    """Function to scrapp IMDB website and get the movie image URL
+    """Function to scrap IMDB website and get the movie image URL
 
     Args:
         url (str): The url of the movie
@@ -166,3 +188,16 @@ def get_thumbnail_url(url):
     img = soup.find("img")                              # We get the first image of the webpage
     img_url = img.get("src")                            # We get the source of the image
     return img_url                                      # And we return it
+
+
+if __name__ == "__main__":
+    title = "Spider-Man 3"
+    nb_recommendations = 10
+    age_category = "adult"
+    user_choices = {"languages": None,
+                    "times": None,
+                    "filter": None}
+
+    df_recommendations = generate_recommendations(title=title, nb=nb_recommendations, age_category=age_category)
+    df_recommendations = filter_recommendations(df=df_recommendations, choices=user_choices, nb=nb_recommendations)
+    print(df_recommendations)

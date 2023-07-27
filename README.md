@@ -29,11 +29,8 @@
 ## TODO
 
 ### Step 1 : Build a web app using Django without Machine Learning
-- Finaliser la page result
+- Ajouter un filtre en fonction de l'age sur le champs d'autocompletion
+- changer l'image de fond
 
-### Step 2 : Train a Machine Learning model
-- Trouver l'algorithme de ML adapté
-- Entrainer le modèle
-- 
-### Step 3 : Add the model into the app
-- Charger le modèle entrainé dans la vue résultat
+### Step 2 : Integrate the Machine learning model in the web app
+
