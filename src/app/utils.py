@@ -85,8 +85,8 @@ def generate_recommendations(title="", nb=5, age_category="adult"):
     nn.fit(df_ML.drop("idx", axis=1))
 
     # We get the index of the movie with his title, and we get the neighbors
-    idx = df_movies[df_movies["movie_title"] == title].index
-    distances, indices = nn.kneighbors(df_ML.iloc[idx].drop("idx", axis=1))
+    idx = df_movies[df_movies["movie_title"] == title].index[0]
+    distances, indices = nn.kneighbors(df_ML[df_ML["idx"] == idx].drop("idx", axis=1))
 
     # We get the indexes of the movies (except the first, it's the input movie)
     indices = df_ML.iloc[indices[0, 1:]]["idx"].values
@@ -191,9 +191,9 @@ def get_thumbnail_url(url):
 
 
 if __name__ == "__main__":
-    title = "Spider-Man 3"
+    title = "16 to Life"
     nb_recommendations = 10
-    age_category = "adult"
+    age_category = "child"
     user_choices = {"languages": None,
                     "times": None,
                     "filter": None}
