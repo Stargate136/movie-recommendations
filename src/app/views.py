@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import render
 
 from . import utils
@@ -11,6 +11,13 @@ def index(request):
 
 def questionnaire(request):
     """The view for the questionnaire page"""
+    if request.method != 'POST':
+        response = HttpResponseNotAllowed(['POST'])
+        response.content = """
+        <h1>Cette URL n'est pas accessible directement</h1>
+        <p><i>Veuillez remplir le formulaire de la page d'accueil</i></p>"""
+        return response
+
     # We get the datas of the form on index page
     title = request.POST.get("title")
     nb = int(request.POST.get("recommendationsNumber"))
@@ -51,6 +58,13 @@ def questionnaire(request):
 
 def result(request):
     """The view for the result page"""
+    if request.method != 'POST':
+        response = HttpResponseNotAllowed(['POST'])
+        response.content = """
+        <h1>Cette URL n'est pas accessible directement</h1>
+        <p><i>Veuillez remplir le formulaire de la page d'accueil</i></p>"""
+        return response
+
     # We get the choices in the form in 'data'
     data = request.POST
 
@@ -65,7 +79,7 @@ def result(request):
     # We store all the choices in a dict
     choices = {"age": data.get("age"),
                "languages": data.getlist("languages"),
-               "times": data.getlist("times"),
+               "duration": data.getlist("duration"),
                "filter": data.get("filter"),
                "genres": data.getlist("genres"),
                "actors": data.getlist("actors"),

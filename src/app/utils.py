@@ -36,7 +36,7 @@ def load_recommendations(idx):
     df = load_movies()
 
     # We return only the movies with an index in 'idx'
-    return df.iloc[idx, :]
+    return df.iloc[idx]
 
 
 def filter_by_age_category(df, age_category):
@@ -81,7 +81,7 @@ def generate_recommendations(title="", nb=5, age_category="adult"):
     df_ML.columns = new_columns
 
     # We fit the NearestNeighbors model
-    nn = NearestNeighbors(n_neighbors=nb * 10)
+    nn = NearestNeighbors(n_neighbors=nb * 10 + 1)
     nn.fit(df_ML.drop("idx", axis=1))
 
     # We get the index of the movie with his title, and we get the neighbors
@@ -114,24 +114,24 @@ def filter_recommendations(df, choices, nb=5):
         df = df[df["language"].isin(languages)]
 
     # Filter by time
-    times = choices["times"]
-    if times:
+    durations = choices["duration"]
+    if durations:
         temp_df = None
-        for time in times:
-            if time == "0":
-                mask = df["duration"] < 90
-                temp_df = pd.concat([temp_df, df[mask]])
-            if time == "1":
-                mask_1 = df["duration"] >= 90
-                mask_2 = df["duration"] < 120
-                temp_df = pd.concat([temp_df, df[mask_1 & mask_2]])
-            if time == "2":
-                mask_1 = df["duration"] >= 120
-                mask_2 = df["duration"] < 180
-                temp_df = pd.concat([temp_df, df[mask_1 & mask_2]])
-            if time == "3":
-                mask = df["duration"] >= 180
-                temp_df = pd.concat([temp_df, df[mask]])
+        if "0" in durations:
+            mask = df["duration"] < 90
+            temp_df = pd.concat([temp_df, df[mask]])
+        if "1" in durations:
+            mask_1 = df["duration"] >= 90
+            mask_2 = df["duration"] < 120
+            temp_df = pd.concat([temp_df, df[mask_1 & mask_2]])
+        if "2" in durations:
+            mask_1 = df["duration"] >= 120
+            mask_2 = df["duration"] < 180
+            temp_df = pd.concat([temp_df, df[mask_1 & mask_2]])
+        if "3" in durations:
+            mask = df["duration"] >= 180
+            temp_df = pd.concat([temp_df, df[mask]])
+
         if len(temp_df):
             df = temp_df
 
@@ -195,9 +195,22 @@ if __name__ == "__main__":
     nb_recommendations = 10
     age_category = "child"
     user_choices = {"languages": None,
-                    "times": None,
+                    "duration": None,
                     "filter": None}
 
     df_recommendations = generate_recommendations(title=title, nb=nb_recommendations, age_category=age_category)
-    df_recommendations = filter_recommendations(df=df_recommendations, choices=user_choices, nb=nb_recommendations)
+    df_recommendations2 = filter_recommendations(df=df_recommendations, choices=user_choices, nb=nb_recommendations)
     print(df_recommendations)
+
+    print(load_movies().columns.values)
+
+    print(df_recommendations.iloc[0]["movie_imdb_link"])
+
+    print(generate_recommendations(title=title, nb=nb_recommendations).index)
+
+    print(load_recommendations(idx=list(range(51))))
+
+    df = load_movies()
+    idx = list(range(51))
+    # We return only the movies with an index in 'idx'
+    print(df.iloc[idx])

@@ -27,7 +27,7 @@
 
 
 ## TODO
-- écrire les tests unitaires
+- vérifier ce test `src.app.tests.test_views.ResultViewTest.test_post_request`
 
 ### Step 1 : Build a web app using Django without Machine Learning
 
