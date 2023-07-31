@@ -24,12 +24,3 @@
     ```
 - run a server with the command :
     ```python manage.py runserver```
-
-
-## TODO
-- vérifier ce test `src.app.tests.test_views.ResultViewTest.test_post_request`
-
-### Step 1 : Build a web app using Django without Machine Learning
-
-### Step 2 : Integrate the Machine learning model in the web app
-

@@ -9,12 +9,12 @@ from app.views import index, questionnaire, result
 class IndexViewTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
+        self.client = Client()
 
     def test_index_view(self):
-        client = Client()
-        response = client.get(reverse('app:index'))  # Using the Django test client to get the response
+        response = self.client.get(reverse('app:index'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'app/index.html')  # Now you can use assertTemplateUsed
+        self.assertTemplateUsed(response, 'app/index.html')
 
         # Checks that the view returns an HTTP 200 status
         self.assertEqual(response.status_code, 200)
@@ -75,24 +75,27 @@ class ResultViewTest(TestCase):
 
     def test_post_request(self):
         # Test POST request
-        request = self.client.post(reverse('app:result'), data={
+
+        # Mocked session data
+        title = "Spider-Man 3"
+        nb = 5
+        recommendations_idx = list(range(51))
+
+        session = self.client.session
+        session['title'] = title
+        session['nb'] = nb
+        session['recommendations_idx'] = recommendations_idx
+        session.save()
+
+        response = self.client.post(reverse('app:result'), data={
             "age": "adult",
             "languages": ["English"],
             "duration": ["1"],
             "filter": "genres",
             "genres": ["Action"],
+            "actors": [],
+            "directors": []
         })
-
-        title = "Spider-Man 3"
-        nb = 5
-        recommendations_idx = list(range(51))
-
-        request.session = {  # Mocked session data
-            "title": title,
-            "nb": nb,
-            "recommendations_idx": recommendations_idx
-        }
-        response = result(request)
 
         # Check the returned status code
         self.assertEqual(response.status_code, 200)

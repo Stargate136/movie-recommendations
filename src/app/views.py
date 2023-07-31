@@ -30,6 +30,7 @@ def questionnaire(request):
     request.session["title"] = title
     request.session["nb"] = nb
     request.session["recommendations_idx"] = df_recommendations.index.tolist()
+    request.session.save()
 
     # We get the languages and the genres of the movies in df_recommendations
     languages = df_recommendations["language"].unique().tolist()
