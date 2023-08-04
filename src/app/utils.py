@@ -57,13 +57,48 @@ def filter_by_age_category(df, age_category):
         return df[df["age_category"].isin(["child", "unknown"])]
 
 
+def score(movie, df_recommendations):
+    """Function to score the model
+
+    Args:
+        movie (pd.DataFrame): A dataframe of the movie selected by the user ( 1 row )
+        df_recommendations (pd.DataFrame): A dataframe containing the recommendations
+
+    Returns:
+        float: The score of the recommendations
+    """
+    genres = movie["genres"].str.split("|")
+    actors = movie[["actor_1_name", "actor_2_name", "actor_3_name"]]
+    director = movie["director_name"].values[0]
+
+    score = 0
+    for i, row in df_recommendations.iterrows():
+        genres_recommendation = row["genres"].split("|")
+        for j, genre in enumerate(genres_recommendation):
+            try:
+                if genre in genres:
+                    score += 1 / j
+            except KeyError:
+                pass
+        if row["actor_1_name"] in actors:
+            score += 1
+        if row["actor_2_name"] in actors:
+            score += 1
+        if row["actor_3_name"] in actors:
+            score += 1
+        if row["director_name"] == director:
+            score += 1
+    return score
+
+
 def generate_recommendations(title="", nb=5, age_category="adult"):
     """Function to generate recommendations using Machine Learning
 
     Args:
-        title (str, optional): The title of the movie the user choosed. Defaults to "".
+        title (str, optional): The title of the movie the user chosen. Defaults to "".
         nb (int, optional): Number of recommandations the user want. Defaults to 5.
-        age_category (str, optional): A string representing the category of age. Possibles values : ["child", "teenager", "adult"]. Defaults to "adult".
+        age_category (str, optional): A string representing the category of age.
+                                      Possibles values : ["child", "teenager", "adult"]. Defaults to "adult".
 
     Returns:
         pd.DataFrame: A dataframe contains movies are recommended by the Machine Learning algorithm
@@ -81,7 +116,10 @@ def generate_recommendations(title="", nb=5, age_category="adult"):
     df_ML.columns = new_columns
 
     # We fit the NearestNeighbors model
-    nn = NearestNeighbors(n_neighbors=nb * 10 + 1)
+
+    # BESTS HYPERPARAMETERS
+    # {'algorithm': 'auto', 'leaf_size': 10, 'metric': 'manhattan', 'p': 1}
+    nn = NearestNeighbors(n_neighbors=nb * 10 + 1, algorithm="auto", leaf_size=10, metric="manhattan", p=1)
     nn.fit(df_ML.drop("idx", axis=1))
 
     # We get the index of the movie with his title, and we get the neighbors
@@ -93,6 +131,10 @@ def generate_recommendations(title="", nb=5, age_category="adult"):
 
     # And we load the recommendations in a dataframe
     df_recommendations = load_recommendations(indices)
+
+    # We count the score ( genre1 +1, genre2+0.5, actor+1, director+1 )
+    movie = df_movies[df_movies["movie_title"] == title]
+    print("score :", score(movie, df_recommendations))
 
     return df_recommendations
 
@@ -190,27 +232,138 @@ def get_thumbnail_url(url):
     return img_url                                      # And we return it
 
 
+def cross_validation():
+    """Function to do a cross validation on the KNN
+       and write the result in a files in the cross_validation_logs directory
+
+        Args:
+            url (str): The url of the movie
+
+        Returns:
+            str: The url of the movie image
+        """
+    # This module is for beeping ( to ear when scoring is finish )
+    import winsound
+    from project.settings import BASE_DIR
+
+    LOG_DIR = BASE_DIR / "cross_validation_logs"
+    LOG_DIR.mkdir(exist_ok=True)
+
+    df_ML = pd.read_csv(DATA_DIR / "preprocessed_data.csv.gz")
+    df_movies = load_movies()
+
+    total_counter = 0
+
+    def best_score(fitted_knn, total_counter):
+
+        # We count the score ( genre1 +1, genre2+0.5, actor+1, director+1 )
+        max_score = 0
+        for i, row in df_ML.iterrows():
+            # Prédiction des indices et distances pour les 3 plus proches voisins
+            _, indices = fitted_knn.kneighbors(row.values.reshape(1, -1))
+
+            df_recommendations = load_recommendations(indices[0]).iloc[1:]
+
+            genres = df_movies.iloc[i]["genres"].split("|")
+            score = 0
+
+            for j, row_reco in df_recommendations.iterrows():
+                genres_recommendation = row_reco["genres"].split("|")
+                for k, genre in enumerate(genres_recommendation, 1):
+                    try:
+                        if genre in genres:
+                            score += 1 / k
+                    except KeyError:
+                        pass
+                row = df_movies.iloc[i]
+                if row["actor_1_name"] in row_reco[["actor_1_name", "actor_2_name", "actor_3_name"]]:
+                    score += 1
+                if row["actor_2_name"] in row_reco[["actor_1_name", "actor_2_name", "actor_3_name"]]:
+                    score += 1
+                if row["actor_3_name"] in row_reco[["actor_1_name", "actor_2_name", "actor_3_name"]]:
+                    score += 1
+                if row["director_name"] == row_reco["director_name"]:
+                    score += 1
+                if score > max_score:
+                    max_score = score
+
+                if total_counter % 10_000 == 0:
+                    print("TOTAL_COUNTER :", total_counter)
+                total_counter += 1
+
+        # To launch a 10 millisecond beep at each iteration
+        frequency = 2500  # Hertz
+        duration = 10  # ms
+        winsound.Beep(frequency, duration)
+
+        return max_score, total_counter
+
+    # Define the hyperparameters to be tested
+    algorithms = ['auto', 'ball_tree', 'kd_tree', 'brute']
+    leaf_sizes = [10, 20, 30, 40, 50]  # Testons plusieurs leaf_sizes
+    metrics = ['euclidean', 'manhattan']
+    p_values = [1, 2]
+
+    # Initializing lists to store results
+    best_model_score = 0
+    best_params = None
+
+    best_params_details = []
+
+    # Hyperparameter loop
+    for algorithm in algorithms:
+        for leaf_size in leaf_sizes:
+            for metric in metrics:
+                for p in p_values:
+
+                    print(f"algorithm: {algorithm},\nleaf_size: {leaf_size},\nmetric: {metric},\np_value: {p}")
+                    # KNN model creation with current hyperparameters
+                    knn = NearestNeighbors(n_neighbors=51,
+                                           algorithm=algorithm,
+                                           leaf_size=leaf_size,
+                                           metric=metric,
+                                           p=p)
+
+                    # Model fitting
+                    knn.fit(df_ML.values)
+                    score, total_counter = best_score(knn, total_counter)
+                    print("SCORE :", score)
+                    if score > best_model_score:
+                        best_model_score = score
+                        best_params = {"algorithm": algorithm,
+                                       "leaf_size": leaf_size,
+                                       "metric": metric,
+                                       "p_value": p}
+                        best_params_details.extend([f"score : {score}\n",
+                                                    f"params :\n",
+                                                    f"algorithm: {algorithm},\nleaf_size: {leaf_size},\n",
+                                                    f"metric: {metric},\np_value: {p}\n",
+                                                    "-" * 50 + "\n"])
+
+                    # To launch a one-second beep at each iteration in hyperparameters
+                    frequency = 2500  # Hertz
+                    duration = 1000  # ms
+                    winsound.Beep(frequency, duration)
+
+    # We print result and store it in a logging files
+    print("best_score :", best_model_score)
+    print("best_params :", best_params)
+    with open(LOG_DIR / "result.log", "a") as f:
+        f.writelines([f"best score : {best_model_score}\n",
+                      f"params : {best_params}\n"])
+    with open(LOG_DIR / "best_params_detail.log", "a") as f:
+        f.writelines(best_params_details)
+
+    # To launch a 10-second beep at the end
+    frequency = 2500  # Hertz
+    duration = 10_000  # ms
+    winsound.Beep(frequency, duration)
+
+
 if __name__ == "__main__":
-    title = "16 to Life"
-    nb_recommendations = 10
-    age_category = "child"
-    user_choices = {"languages": None,
-                    "duration": None,
-                    "filter": None}
+    cross_validation()
 
-    df_recommendations = generate_recommendations(title=title, nb=nb_recommendations, age_category=age_category)
-    df_recommendations2 = filter_recommendations(df=df_recommendations, choices=user_choices, nb=nb_recommendations)
-    print(df_recommendations)
-
-    print(load_movies().columns.values)
-
-    print(df_recommendations.iloc[0]["movie_imdb_link"])
-
-    print(generate_recommendations(title=title, nb=nb_recommendations).index)
-
-    print(load_recommendations(idx=list(range(51))))
-
-    df = load_movies()
-    idx = list(range(51))
-    # We return only the movies with an index in 'idx'
-    print(df.iloc[idx])
+    # RESULT
+    # SCORE: 88.99999999999997
+    # best_score: 88.99999999999997
+    # best_params: {'algorithm': 'auto', 'leaf_size': 10, 'metric': 'manhattan', 'p_value': 1}
