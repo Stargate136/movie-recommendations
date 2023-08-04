@@ -97,3 +97,24 @@ input[type="number"]:focus {
 .checkbox-group input[type="checkbox"], .radio-group input[type="radio"] {
     margin-top: 5px;
 }
+
+.nav-logo {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+}
+
+.nav-link {
+    color: white;
+}
+.nav-link:hover {
+    color: #007BFF;  /* Change to whatever hover color you prefer */
+    transition: color 0.3s ease;
+}
+.nav-link-wrapper a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

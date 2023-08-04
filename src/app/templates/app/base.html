@@ -37,7 +37,14 @@
     <nav>
         <ul>
             <li>
-                <a href="{% url 'app:index' %}">Accueil</a>
+                <div class="nav-link-wrapper">
+                    <a href="{% url 'app:index' %}">
+                        <img class="nav-logo" src="{% static 'app/img/home.png' %}" alt="Lien vers la page d'accueil">
+                        <div class="nav-link">
+                            Accueil
+                        </div>
+                    </a>
+                </div>
             </li>
         </ul>
     </nav>
