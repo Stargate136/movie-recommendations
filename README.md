@@ -36,3 +36,15 @@
     ```python manage.py migrate```
 - run a server with the command :
     ```python manage.py runserver```
+
+## Use
+- activate the virtual environment with this command :
+    - Windows : 
+        ```
+        cd venv/Scripts
+        activate.bat
+        cd ../..
+      ```
+    - Mac / Linux : ```source venv/bin/activate```
+- run a server with the command :
+    ```python manage.py runserver```
